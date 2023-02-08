@@ -11,9 +11,9 @@ public:
     ~OrderProcessor();
     bool process(OrderRequest orderRequest);
     bool startProcess(OrderRequest orderRequest);
-    bool checkQty(OrderRequest orderRequest, map<double, double>::iterator itr);
-    bool getBUY_map(std::map<double, double> &buy_map);
-    bool getSELL_map(std::map<double, double> &sell_map);
+    ProcessorErrorMessage checkOrder(OrderRequest orderRequest, User user, Side side);
+    bool *getBUY_map(std::map<double, double> &buy_map);
+    bool *getSELL_map(std::map<double, double> &sell_map);
 
 private:
     ResponseSender* responseSender;

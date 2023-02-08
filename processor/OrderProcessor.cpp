@@ -68,6 +68,12 @@ bool OrderProcessor::startProcess(OrderRequest orderRequest)
     bool isSeperateOrderWorked = false;
 
     OrderBookHandler orderBookHandler; 
+
+    // checkOrder(orderRequest, orderRequest.userId, orderRequest.side)
+    // 두번째 매개변수 user 를 어떻게 가져와야 할지 생각할 것. 
+    // 아마 user 데이터 핸들러를 만들어서 거기 돌려야 할듯?
+
+    /*
     //1번
     std::map<double, double> buy_map = *orderBookHandler.getBUY_map1();
     std::map<double, double>* buy_map = orderBookHandler.getBUY_map1();
@@ -90,17 +96,17 @@ bool OrderProcessor::startProcess(OrderRequest orderRequest)
     //3번
     std::map<double, double> buy_map3;
     orderBookHandler.getBUY_map3(buy_map3); // call by reference 
-
+    */
 
     // buy_map3[1.5] = 3.5;
 
     double orderbookQty;
-    if ( !orderBookHandler.getQtyByPrice(orderRequest.price, orderbookQty, true) )
+    if ( orderBookHandler.getQtyByPrice(orderRequest.price, orderbookQty, EN_BUY) == EN_GET_ENOUTH_QYY)
     {
         // 처리 
-    }
+        orderBookHandler.setOrderbook(orderRequest.price, orderbookQty - orderRequest.qty, EN_BUY);
 
-    orderBookHandler.setOrderbook(orderRequest.price, orderbookQty - orderRequest.qty);
+    }
 
 
     // buy_map[1.5] = 1.5;
@@ -125,7 +131,7 @@ bool OrderProcessor::startProcess(OrderRequest orderRequest)
         {
             if (0 == CompareDoubleAbsoulte(orderRequest.price, itr->first))
             {
-                cout << "구매가격 판매가격 일치 확인 성공"<< endl;
+                
 
                 if(checkQty(orderRequest, itr) == true) // enum 으로 변경 예정
                     isSeperateOrderWorked == true;
@@ -146,20 +152,19 @@ bool OrderProcessor::startProcess(OrderRequest orderRequest)
     }
 }
 
-bool OrderProcessor::checkQty(OrderRequest orderRequest,  map<double, double>::iterator itr)
+ProcessorErrorMessage OrderProcessor::checkOrder(OrderRequest orderRequest, User user, Side side)
 {
-    bool IsCheckQtyWorked = false;
-    //for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
+    if(orderRequest.orderType == EN_LIMIT)
     {
-        if(orderRequest.qty <= itr->second)
-        {
-            // 체결 성공 후 itr->second 에서 체결된 갯수만큼 빼줌
-            // 유저 데이터 핸들러를 가져와서 체결된 양 측의 보유 주식 수 + 계좌 잔액등을 수정해줘야 함
-            itr->second -= orderRequest.qty;
-            cout << "구매 성공"<< endl;
-        }
-        
+        if(orderRequest.price < 0) 
+        /* 가격정보를 가져와서 시세대비 플마 몇퍼센트 이런거 설정해두면 좋을듯|| orderRequest.price*/
+            return EN_WRONG_PRICE;
+        if(orderRequest.qty < 0 )
+            return EN_WRONG_QTY;
     }
-    IsCheckQtyWorked = true;
-    return IsCheckQtyWorked; // 나중에 enum 으로 변경예정
+    
+    if(orderRequest.price * orderRequest.qty > user.balance)
+        return EN_NOT_ENOUGH_BALANCE;
+    
+    return EN_CHECK_ORDER_SUCCESS;
 }
