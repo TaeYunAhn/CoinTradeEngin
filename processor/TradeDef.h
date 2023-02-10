@@ -16,17 +16,17 @@ enum Side
     EN_SELL,
 };
 
-enum OrderBookErrorMessage
+enum class OrderBookErrorMessage
 {
     EN_NOT_ENOUGH_QTY,
     EN_NOT_MATCHED_PRICE,
     EN_NOT_ENOUGH_BALANCE,
-    EN_GET_ENOUTH_QYY,
+    EN_GET_ENOUTH_QTY,
     EN_CONCLUSION_SUCCESS,
 
 };
 
-enum ProcessorErrorMessage
+enum class ProcessorErrorMessage
 {
     EN_WRONG_PRICE,
     EN_WRONG_QTY,

@@ -101,7 +101,7 @@ bool OrderProcessor::startProcess(OrderRequest orderRequest)
     // buy_map3[1.5] = 3.5;
 
     double orderbookQty;
-    if ( orderBookHandler.getQtyByPrice(orderRequest.price, orderbookQty, EN_BUY) == EN_GET_ENOUTH_QYY)
+    if ( orderBookHandler.getQtyByPrice(orderRequest.price, orderbookQty, EN_BUY) == OrderBookErrorMessage::EN_GET_ENOUTH_QTY)
     {
         // 처리 
         orderBookHandler.setOrderbook(orderRequest.price, orderbookQty - orderRequest.qty, EN_BUY);
@@ -125,13 +125,13 @@ ProcessorErrorMessage OrderProcessor::checkOrder(OrderRequest orderRequest, User
     {
         if(orderRequest.price < 0) 
         /* 가격정보를 가져와서 시세대비 플마 몇퍼센트 이런거 설정해두면 좋을듯|| orderRequest.price*/
-            return EN_WRONG_PRICE;
+            return ProcessorErrorMessage::EN_WRONG_PRICE;
         if(orderRequest.qty < 0 )
-            return EN_WRONG_QTY;
+            return ProcessorErrorMessage::EN_WRONG_QTY;
     }
     
     if(orderRequest.price * orderRequest.qty > user.balance)
-        return EN_NOT_ENOUGH_BALANCE;
+        return ProcessorErrorMessage::EN_NOT_ENOUGH_BALANCE;
     
-    return EN_CHECK_ORDER_SUCCESS;
+    return ProcessorErrorMessage::EN_CHECK_ORDER_SUCCESS;
 }

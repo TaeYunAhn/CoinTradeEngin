@@ -1,6 +1,10 @@
+#pragma once
 #include <iostream>
 #include <map>
+#include <queue>
 #include "TradeDef.h"
+
+using namespace std;
 
 class OrderBookHandler
 {
@@ -17,9 +21,14 @@ public:
     
     OrderBookErrorMessage getQtyByPrice(const double price, double& qty, Side EN_side);
     OrderBookErrorMessage setOrderbook(const double price, double qty, Side EN_side);
+    bool registerOrderBook(double price, double qty, Side EN_side);
+    int CompareDoubleAbsoulte(double x, double y, double absTolerance = (1.0e-8));
+
 
 private:
     std::map<double, double> BUY_map;
     std::map<double, double> SELL_map;
+    double curPrice;
+    std::map<map<double, double>, map<double, double>> OrderBook_map;
 
 };

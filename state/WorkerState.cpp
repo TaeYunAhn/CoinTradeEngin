@@ -80,10 +80,10 @@ EResultCode WorkerState::proceed()
     
 	// //curl_global_cleanup();
 
-    // interface->setNextState(new FinalState());
-	// interface->changeState();
+    interface->setNextState(new FinalState());
+	interface->changeState();
 
-	// return EResultCode::enSuccess;
+	return EResultCode::enSuccess;
 }
 
 void WorkerState::shutdown()
