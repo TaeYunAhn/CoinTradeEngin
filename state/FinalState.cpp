@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include "FinalState.h"
 
 FinalState::FinalState(/* args */)
@@ -17,4 +17,5 @@ EResultCode FinalState::proceed()
 
 void FinalState::shutdown()
 {
-    }
+    std::cout << "Good bye!" << std::endl;
+}

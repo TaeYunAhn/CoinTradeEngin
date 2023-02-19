@@ -49,34 +49,71 @@ std::map<double, double>* OrderBookHandler::getSELL_map()
 }
 */
 
-OrderBookErrorMessage OrderBookHandler::getQtyByPrice(const double price, double& qty, Side EN_side)
+bool OrderBookHandler::concludeContract()
 {
-    // 함수 이름이 GET 인데 리턴을 QTY를 해야 하나..
+    return true;
+}
 
-    if(EN_side == EN_BUY)
-    {
-        for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
+
+bool OrderBookHandler::printMap()
+{
+    for(auto itr = BUY_map.begin(); itr != BUY_map.end(); itr++)
+        cout << "BUY_map price : "<<itr->first << " qty : " << itr->second <<endl;
+    for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
+        cout << "SELL_map price : "<<itr->first << " qty : " << itr->second <<endl;
+    
+
+}
+
+bool OrderBookHandler::comparePriceMap(double price, double qty, Side EN_side)
+{
+
+    if(SELL_map.find(price) == SELL_map.end())
+        return false;
+    else
+        return true;
+    /*for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
         {
             if(0 >= CompareDoubleAbsoulte(price, itr->first))
             {
+                
                 if(qty <= itr->second)
                     return OrderBookErrorMessage::EN_GET_ENOUTH_QTY;
-                else if(itr->second == 0)
-                    return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE; 
-                    //구매 가능한 수량이 0이라고 해서 map의 키에 존재 하지 않을거란 보장이 없음
-                
                 else
                 {
+
                     std::cout<< "try register orderbook price : " << price << "qty : " << qty<<endl;     
                     registerOrderBook(price, qty, EN_BUY);
                 }
-                // 주문 수량보다 작을 경우 적은 숫자 만큼만 체결 및 나머지 오더북 등록 될 수 있도록 처리 
-                // 함수를 따로 빼야할듯
             }
             else
-                return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;
+                return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;*/
+}
+
+
+OrderBookErrorMessage OrderBookHandler::getQtyByPrice(double price, double& qty, Side EN_side)
+{
+    cout << "Start getQtyByPrice"<<endl;
+    // 함수 이름이 GET 인데 리턴을 QTY를 해야 하나..
+    int temp_price = 0;
+    if(EN_side == EN_BUY)
+    {
+        //if(price >= SELL_map.begin()->first) //구매 희망가격이 판매 희망가격 보다 높거나 같을 경우
+        //{
+        //    temp_price = SELL_map.begin()->first; // 
+        //}
+        if(BUY_map.find(price) == BUY_map.end())
+        {
+            BUY_map[price] = qty;
         }
+        else if(BUY_map.find(price) != BUY_map.end())
+        {
+            BUY_map[price] += qty;
+        }
+        
+        
     }
+
 
     else if(EN_side == EN_SELL)
     {
@@ -93,7 +130,7 @@ OrderBookErrorMessage OrderBookHandler::getQtyByPrice(const double price, double
                 else
                 {
                     std::cout<< "try register orderbook price : " << price << "qty : " << qty<<endl;     
-                    registerOrderBook(price, qty, EN_BUY);
+                    //egisterOrderBook(price, qty, EN_BUY);
 
                 }
 
@@ -104,7 +141,23 @@ OrderBookErrorMessage OrderBookHandler::getQtyByPrice(const double price, double
                 return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;
         }
     }
+
 }
+
+double OrderBookHandler::setAppropriatePrice(std::map<double, double> check_map, Side EN_side)
+{
+    //if(EN_side == EN_BUY) // set map serch
+    //{
+    //    
+    //}
+    //else if(EN_side == EN_SELL) // buy map serch
+    //{
+    //
+    //}
+}
+
+
+
 OrderBookErrorMessage OrderBookHandler::setOrderbook(const double price, double qty, Side EN_side)
 {
     if(EN_side == EN_BUY)
@@ -128,21 +181,26 @@ OrderBookErrorMessage OrderBookHandler::setOrderbook(const double price, double 
     }
 }
  
-bool OrderBookHandler::registerOrderBook(double price, double qty, Side EN_side)
+bool OrderBookHandler::registerOrderBook(double price, double qty, Side EN_side, std::string symbol)
 {
     if(EN_side == EN_BUY)
     {
-        for(auto itr = BUY_map.begin(); itr != BUY_map.end(); itr++)
+        if(BUY_map.find(price) != BUY_map.end())
         {
-            if(0 == CompareDoubleAbsoulte(price, itr->first))
-            {
-                BUY_map[price] += qty;
-                std::cout<< "orderbook registered price : " << price << "qty : " << qty<<endl; 
-            }
+            //if(0 == CompareDoubleAbsoulte(price, itr->first))
+            
+                BUY_map[price] += qty; 
+                std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
+            
 
         }
-        BUY_map[price] = qty;
-        std::cout<< "orderbook registered price : " << price << "qty : " << qty<<endl; 
+        else if(BUY_map.find(price) == BUY_map.end())
+        {
+            BUY_map[price] = qty;
+            std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
+        
+        }
+        
 
     }
     else if (EN_side == EN_SELL)
@@ -152,14 +210,13 @@ bool OrderBookHandler::registerOrderBook(double price, double qty, Side EN_side)
             if(0 == CompareDoubleAbsoulte(price, itr->first))
             {
                 SELL_map[price] += qty;
-                std::cout<< "orderbook registered price : " << price << "qty : " << qty<<endl; 
-
+                std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
             }
-                
 
         }
         SELL_map[price] = qty;
-                std::cout<< "orderbook registered price : " << price << "qty : " << qty<<endl; 
+            std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
+         
 
     }
 }

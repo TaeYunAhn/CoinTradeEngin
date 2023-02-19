@@ -16,6 +16,21 @@ enum Side
     EN_SELL,
 };
 
+class TradeDataUtil
+{
+public:
+    static std::string getSideStr(const Side& side)
+    {
+        switch (side)
+        {
+        case EN_BUY: return "EN_BUY";
+        case EN_SELL: return "EN_SELL";
+        default: return "";
+        }
+    }
+};
+
+
 enum class OrderBookErrorMessage
 {
     EN_NOT_ENOUGH_QTY,
@@ -23,7 +38,6 @@ enum class OrderBookErrorMessage
     EN_NOT_ENOUGH_BALANCE,
     EN_GET_ENOUTH_QTY,
     EN_CONCLUSION_SUCCESS,
-
 };
 
 enum class ProcessorErrorMessage

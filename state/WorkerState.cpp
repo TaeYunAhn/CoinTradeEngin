@@ -22,14 +22,27 @@ EResultCode WorkerState::proceed()
     std::cout << "WorkerState proceed start"<<endl;
     OrderRequest orderRequest;
     orderRequest.orderType = EN_MARKET;
-    orderRequest.price = 3000.01;
-    orderRequest.qty = 31.31;
+    orderRequest.symbol = "BTC";
+    orderRequest.side = EN_BUY;
+    orderRequest.price = 2000.00;
+    orderRequest.qty = 2000;
+    
+    
+    std::cout << "orderRequest2 register start"<<endl;
+
+    OrderRequest orderRequest2;
+    orderRequest2.orderType = EN_MARKET;
+    orderRequest2.symbol = "BTC";
+    orderRequest2.side = EN_BUY;
+    orderRequest2.price = 3000.01;
+    orderRequest2.qty = 3000;
 
 
 
 
     RequestReceiver requestReceiver;
     requestReceiver.receiveReq(orderRequest);
+    requestReceiver.receiveReq(orderRequest2);
 
     // //const auto& settings = CSettings::getInstance();
     

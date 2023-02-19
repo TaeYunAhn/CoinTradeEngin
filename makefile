@@ -11,4 +11,8 @@ clean:
 	rm -f $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS)
+	$(CC) -g -o  $@ $(OBJS)
+
+.SUFFIXES: .o .cpp
+.cpp.o:
+	$(CC) $(CFLAGS) -g -c -O0 -o $@ $<
