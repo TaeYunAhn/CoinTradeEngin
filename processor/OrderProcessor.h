@@ -1,6 +1,7 @@
 #pragma once
 #include "TradeDef.h"
 #include "ResponseSender.h"
+#include "OrderBookHandler.h"
 #include <map>
 
 
@@ -17,4 +18,6 @@ public:
 
 private:
     ResponseSender* responseSender;
+    OrderBookHandler *orderBookHandler;
+
 };

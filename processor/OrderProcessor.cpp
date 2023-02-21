@@ -13,11 +13,14 @@ using namespace std;
 OrderProcessor::OrderProcessor()
 {
     responseSender = new ResponseSender;
+    //orderBookHandler = new OrderBookHandler;
+
 }
 
 OrderProcessor::~OrderProcessor()
 {
     delete responseSender;
+    //delete orderBookHandler;
 }
 
 bool OrderProcessor::process(OrderRequest orderRequest)
@@ -59,7 +62,7 @@ int CompareDoubleAbsoulte(double x, double y, double absTolerance = (1.0e-8))
 
 bool OrderProcessor::startProcess(OrderRequest orderRequest)
 {
-    sleep(20);
+    //sleep(20);
     cout << "Start Process" << endl;
 
     bool isSeperateOrderWorked = false;

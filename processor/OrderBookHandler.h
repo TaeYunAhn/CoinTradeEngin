@@ -31,7 +31,7 @@ public:
 private:
     std::map<double, double> BUY_map;
     std::map<double, double> SELL_map;
-    double curPrice;
+    //double curPrice;
     std::map<map<double, double>, map<double, double>> OrderBook_map;
 
 };

@@ -24,8 +24,8 @@ EResultCode WorkerState::proceed()
     orderRequest.orderType = EN_MARKET;
     orderRequest.symbol = "BTC";
     orderRequest.side = EN_BUY;
-    orderRequest.price = 2000.00;
-    orderRequest.qty = 2000;
+    orderRequest.price = 2000.00; // 키 1
+    orderRequest.qty = 2000; // 밸류 1
     
     
     std::cout << "orderRequest2 register start"<<endl;
@@ -34,8 +34,8 @@ EResultCode WorkerState::proceed()
     orderRequest2.orderType = EN_MARKET;
     orderRequest2.symbol = "BTC";
     orderRequest2.side = EN_BUY;
-    orderRequest2.price = 3000.01;
-    orderRequest2.qty = 3000;
+    orderRequest2.price = 3000.01; // 키 2
+    orderRequest2.qty = 3000; // 밸류 2
 
 
 
