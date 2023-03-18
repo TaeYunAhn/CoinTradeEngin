@@ -7,7 +7,6 @@ struct OrderBook
     double price;
     double qty;
     double totalQty;
-
 };
 
 /*
@@ -18,5 +17,5 @@ struct OrderBook
 * Response 보내기 <- UI 에 따라 달라질듯
 */
 
-std::map<double, double> BUY_map; // 키 : 가격, 밸류 : 갯수
-std::map<double, double> SELL_map;
+std::map<double, QtyData> BUY_map; // 키 : 가격, 밸류 : 갯수
+std::map<double, QtyData> SELL_map;

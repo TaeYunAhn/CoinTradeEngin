@@ -13,14 +13,11 @@ using namespace std;
 OrderProcessor::OrderProcessor()
 {
     responseSender = new ResponseSender;
-    //orderBookHandler = new OrderBookHandler;
-
 }
 
 OrderProcessor::~OrderProcessor()
 {
     delete responseSender;
-    //delete orderBookHandler;
 }
 
 bool OrderProcessor::process(OrderRequest orderRequest)
@@ -42,11 +39,13 @@ bool OrderProcessor::process(OrderRequest orderRequest)
     isProcessWorked = true;
     return isProcessWorked;
 }
-bool getBUY_map(std::map<double, double> &buy_map)
+
+bool getBUY_map(std::map<double, QtyData> &buy_map)
 {
     OrderBookHandler orderBookHandler;
 }
-bool getSELL_map(std::map<double, double> &sell_map)
+
+bool getSELL_map(std::map<double, QtyData> &sell_map)
 {
 
 }
@@ -60,92 +59,146 @@ int CompareDoubleAbsoulte(double x, double y, double absTolerance = (1.0e-8))
     return (diff > 0) ? 1 : -1;
 }
 
+//  0. 기능 테스트
+//  1. 유닛 테스트
+//  2. 유닛 테스트를 기반으로 테스트 케이스 만들어서 넣는 방식
+//  3. 부하 테스트 (한꺼번에 트레픽이 몰렸을때)
+//  4. 성능 테스트 (시간이 금방 처리하냐) 
+
+
 bool OrderProcessor::startProcess(OrderRequest orderRequest)
 {
-    //sleep(20);
+    sleep(20);
     cout << "Start Process" << endl;
 
     bool isSeperateOrderWorked = false;
 
-    User user; // 임시
-    user.assets = 100000000.0;
-    user.balance = 100000000.0;
+    User user1; // 임시
+    user1.assets = 100000000.0;
+    user1.balance = 100000000.0;
+    user1.wallet.qty = 100;
 
-    OrderBookHandler orderBookHandler;
+    User user2; // 임시
+    user2.assets = 100000000.0;
+    user2.balance = 100000000.0;
+    user2.wallet.qty = 100;
+
+    //OrderBookHandler orderBookHandler;
     
-
-    checkOrder(orderRequest, user);
+    checkOrder(orderRequest, user1);
     std::cout<< "startProcess orderRequest : " << orderRequest.symbol << " side : " << TradeDataUtil::getSideStr(orderRequest.side) << " price : " << orderRequest.price << " qty : " << orderRequest.qty<<endl; 
-
-    orderBookHandler.registerOrderBook(orderRequest.price, orderRequest.qty, orderRequest.side, orderRequest.symbol);
-    orderBookHandler.concludeContract();
-    orderBookHandler.printMap();
+    //if (orderBookHandler.checkExistContract(orderRequest.price, orderRequest.qty, orderRequest.side) != 0)
+    //    ExecuteConclusion(orderRequest, user1, orderRequest.side);
+    
 
     // 1. 주문이 유효한지 확인
     // 2. 주문이 어떤건지 확인 하고
     // 3. 주문 확인 해서 체결되는거면 오더북 등록 하지 말고 바로 체결
     // 4. 오더북 등록
-    // 5. 오더북 상 체결가능한 상품이면 체결
-
-    /*if (orderRequest.side == EN_BUY)
-    {
-        //if (!orderBookHandler.comparePriceMap(orderRequest.price, orderRequest.qty, EN_BUY) )
-        //{
-        //    
-        //}
-
+    // 5. 오더북 상 체결가능한 상품이면 체결   
     
-
-        //for (auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
-        //{
-        //    if (0 >= CompareDoubleAbsoulte(orderRequest.price, itr->first))
-        //    {
-        //
-        //        if (orderRequest.qty <= itr->second)
-        //            return true;  //OrderBookErrorMessage::EN_GET_ENOUTH_QTY;
-        //        else
-        //        {
-        //            //std::cout << "try register orderbook price : " << orderRequest.price << "qty : " << orderRequest.qty << endl;
-        //            //registerOrderBook(price, qty, EN_BUY);
-        //        }
-        //    }
-        //    else
-        //        return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;
-        //}
-    }
-    else if (EN_side == EN_SELL)
+    map<double, QtyData>buy_map;
+    map<double, QtyData>sell_map;
+    
+    orderBookHandler.getBUY_map2(&buy_map);
+    orderBookHandler.getSELL_map2(&sell_map);
+    checkOrder(orderRequest, user1);
+    /*while(orderRequest.qty != 0 || !buy_map.empty() || !sell_map.empty())
     {
-        for (auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
+        if(orderRequest.side == EN_BUY)
         {
-            if (0 == CompareDoubleAbsoulte(price, itr->first))
+            if(sell_map.begin()->first <= orderRequest.price)
             {
-                if (qty <= itr->second)
-                    return OrderBookErrorMessage::EN_GET_ENOUTH_QTY;
-                else if (itr->second == 0)
-                    return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;
-                // 구매 가능한 수량이 0이라고 해서 map의 키에 존재 하지 않을거란 보장이 없음
-
-                else
+                //getQtyByPrice
+                while(sell_map.find(orderRequest.price)->second.totalQTY != 0)
                 {
-                    std::cout << "try register orderbook price : " << price << "qty : " << qty << endl;
-                    registerOrderBook(price, qty, EN_BUY);
-                }
+                    if(sell_map.find(orderRequest.price)->second.totalQTY >= orderRequest.qty)
+                    {
+                        sell_map.find(orderRequest.price)->second.totalQTY -= orderRequest.qty;
+                        //setExecuteContract 나중에 함수로..
+                        double tempPrice = orderRequest.price * orderRequest.qty;
+                        user1.assets += tempPrice;
+                        user1.wallet.qty -= orderRequest.qty;
+                        user2.assets -= tempPrice;
+                        user2.wallet.qty += orderRequest.qty;
+                    }
+                    else if(sell_map.find(orderRequest.price)->second.totalQTY < orderRequest.qty)
+                    {
+                        double tempQty = orderRequest.qty - sell_map.find(orderRequest.price)->second.totalQTY;
+                        //sell_map.find(orderRequest.price)->second.totalQTY -= tempQty;
+                        orderRequest.qty -= tempQty;
+                        //setExecuteContract
+                        double tempPrice = orderRequest.price * tempQty;
+                        user1.assets += tempPrice;
+                        user1.wallet.qty += orderRequest.qty;
+                        user2.assets -= tempPrice;
+                        user2.wallet.qty += orderRequest.qty;
 
-                // 주문 수량보다 작을 경우 적은 숫자 만큼만 체결 될 수 있도록 처리
-                // 함수를 따로 빼야할듯
+                    }     
+                }
             }
-            else
-                return OrderBookErrorMessage::EN_NOT_MATCHED_PRICE;
+            if(orderRequest.side == EN_SELL)
+            {
+                if(buy_map.rbegin()->first <= orderRequest.price);
+                {
+                    //getQtyByPrice
+                    while(buy_map.find(orderRequest.price)->second.totalQTY != 0)
+                    {
+                        if(buy_map.find(orderRequest.price)->second.totalQTY >= orderRequest.qty)
+                        {
+                            buy_map.find(orderRequest.price)->second.totalQTY -= orderRequest.qty;
+                            //setExecuteContract 나중에 함수로..
+                            double tempPrice = orderRequest.price * orderRequest.qty;
+                            user2.assets += tempPrice;
+                            user2.wallet.qty += orderRequest.qty;
+                            user1.assets -= tempPrice;
+                            user1.wallet.qty += orderRequest.qty;
+                        }
+                        else if(buy_map.find(orderRequest.price)->second.totalQTY < orderRequest.qty)
+                        {
+                            double tempQty = buy_map.find(orderRequest.price)->second.totalQTY - orderRequest.qty;
+                            buy_map.find(orderRequest.price)->second.totalQTY -= tempQty;
+                            orderRequest.qty -= tempQty;
+                            //setExecuteContract
+                            double tempPrice = orderRequest.price * tempQty;
+                            user2.assets += tempPrice;
+                            user2.wallet.qty += orderRequest.qty;
+                            user1.assets -= tempPrice;
+                            user1.wallet.qty += orderRequest.qty;
+
+                        }
+                    } 
+                }            
+            }
         }
+    
     }*/
 
-    //double orderbookQty;
-    //if (orderBookHandler.getQtyByPrice(orderRequest.price, orderbookQty, EN_BUY) == OrderBookErrorMessage::EN_GET_ENOUTH_QTY)
-    //{
-    //    // 처리
-    //    orderBookHandler.setOrderbook(orderRequest.price, orderbookQty - orderRequest.qty, EN_BUY);
-    //}
+    orderBookHandler.registerOrderBook(orderRequest.price, orderRequest.qty, orderRequest.side, orderRequest.symbol);
+    orderRequest.qty = 0;
+    //orderBookHandler.concludeContract(); 
+    orderBookHandler.printMap();
 }
+
+
+bool OrderProcessor::ExecuteConclusion(OrderRequest orderRequest, User user, Side EN_Side)
+{
+    bool isExecuted = false;
+    if(EN_Side == EN_BUY)
+    {
+        //double tempPrice = checkExistContract(orderRequest.price, orderRequest.qty, orderRequest.side);
+        // //sellmap의 begin 부터 처리를 해야함
+        //while (orderRequest.qty != 0 || tempPrice <= orderRequest.price)
+        //{
+        //    tempPrice = checkExistContract(orderRequest.price, orderRequest.qty, orderRequest.side);
+        //    deleteContract();
+        //}
+    }
+    return isExecuted;
+}
+
+
+
 ProcessorErrorMessage OrderProcessor::checkOrder(OrderRequest orderRequest, User user)
 {
     if (orderRequest.orderType == EN_LIMIT)
@@ -160,3 +213,21 @@ ProcessorErrorMessage OrderProcessor::checkOrder(OrderRequest orderRequest, User
         return ProcessorErrorMessage::EN_NOT_ENOUGH_BALANCE;
     return ProcessorErrorMessage::EN_CHECK_ORDER_SUCCESS;
 }
+
+/*
+
+시도해 본 것들
+
+1. 소수점 오차 때문인가? -> map의 키밸류 타입 변경해서 넣음 int, string 시도해봄 => 안됨. 애초에 이 문제는 아닐거라 생각함
+2. 74번 줄 OrderBookHandler 를 임시객체로 써서 그런가? 
+=> 맴버로 *orderBookHandler를 넣어주고, 생성자와 소멸자에 생성 삭제 해줌 => 안됨
+=> 그래서 포인터로 orderBookHandler를 포인터 말고 그냥 넘겨줌 
+=> CoinTradeEngine.out: malloc.c:2617: sysmalloc: Assertion `(old_top == initial_top (av) && old_size == 0) || ((unsigned long) (old_size) >= MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end & (pagesize - 1)) == 0)' failed.
+실행시, 이런 오류가 뜸 => 안되는게 맞긴 함.. 포인터로 넘겨줘야지
+3. 맵에 데이터가 안들어가나? 코드로 넣어봄. => 코드로 넣으면 잘 들어감
+4. 맵에 넣을때 깊은복사, 얕은복사 문제인가? => 맵에 넣을때는 pass by value 가 디폴트라고 나옴
+
+
+그래서 뭐가 문제지?
+
+*/

@@ -30,8 +30,6 @@ public:
 
 private:
     
-    OrderProcessor* orderProcessor; 
-
-
+    OrderProcessor *orderProcessor; 
 };
 // 

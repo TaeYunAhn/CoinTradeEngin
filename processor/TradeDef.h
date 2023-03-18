@@ -58,7 +58,19 @@ struct OrderRequest
     string requestId;
     string userId;
     time_t time;
+
+    OrderRequest() {}
+    OrderRequest(OrderType input_orderType, string input_symbol, Side input_side, double input_price, double input_qty)
+    {
+        orderType = input_orderType;
+        symbol = input_symbol;
+        side = input_side;
+        price = input_price;
+        qty = input_qty;
+    }
 };
+
+
 
 struct Order
 {
@@ -69,6 +81,12 @@ struct Order
     string orderId;
     string userId;
     time_t time;
+};
+
+struct Wallet
+{
+    string coinName;
+    double qty;
 };
 
 struct User
@@ -82,8 +100,10 @@ struct User
     double profit;       // 평가손익
     double profitRate;   // 수익률
     Order order;
+    Wallet wallet;
     //Position position;
 };
+
 
 
 

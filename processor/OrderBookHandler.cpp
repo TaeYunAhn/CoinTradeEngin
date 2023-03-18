@@ -7,7 +7,7 @@
 
 OrderBookHandler::OrderBookHandler()
 {
-    BUY_map[1000] = 1000;
+    
 }
 
 OrderBookHandler::~OrderBookHandler()
@@ -27,42 +27,92 @@ int OrderBookHandler::CompareDoubleAbsoulte(double x, double y, double absTolera
 }
 
 
-/*
+
 //1번 방법 : 매개변수 없이 하는 법
-std::map<double, double>* OrderBookHandler::getBUY_map1()
+std::map<double, QtyData>* OrderBookHandler::getBUY_map1()
 {
     return &BUY_map;
 }
+std::map<double, QtyData>* OrderBookHandler::getSELL_map1()
+{
+    return &SELL_map;
+}
+
 //2번 : 매개변수로 담아오는 것
-void OrderBookHandler::getBUY_map2(std::map<double, double> *buy_map)
+void OrderBookHandler::getBUY_map2(std::map<double, QtyData> *buy_map)
 {
     buy_map = &BUY_map; 
     
 }
 //3번 : 레퍼런스로 가져오는 법
-void OrderBookHandler::getBUY_map3(std::map<double, double> &buy_map)
+void OrderBookHandler::getBUY_map3(std::map<double, QtyData> &buy_map)
 {
     buy_map = BUY_map;
 }
 
-std::map<double, double>* OrderBookHandler::getSELL_map()
-{
-    return &SELL_map;
-}
-*/
+//std::map<double, QtyData>* OrderBookHandler::getSELL_map()
+//{
+//    return &SELL_map;
+//}
 
-bool OrderBookHandler::concludeContract()
+void OrderBookHandler::getSELL_map2(std::map<double, QtyData> *sell_map)
 {
-    return true;
+    sell_map = &SELL_map; 
+    
+}
+
+double OrderBookHandler::checkExistContract(double price, double qty, Side EN_side)
+{
+    double tempPrice = 0;
+    
+    if(EN_side == EN_BUY)
+    {
+        if (SELL_map.begin()->first <= price)
+            tempPrice = SELL_map.begin()->first;
+        
+    }
+    else if(EN_side == EN_SELL)
+    {
+        if (BUY_map.rbegin()->first >= price)
+             tempPrice = BUY_map.rbegin()->first;
+    }
+
+    return tempPrice;
+    
+    
+}
+
+
+bool OrderBookHandler::deleteContract(double price, double qty, Side EN_side)
+{
+    bool deleteContract = false;
+    if(EN_side == EN_BUY)
+    {
+        SELL_map[price].totalQTY -= qty;
+        deleteContract = true;
+    }
+    else if(EN_side == EN_SELL)
+    {
+        BUY_map[price].totalQTY -= qty;
+        deleteContract = true;
+    }
+    return deleteContract;
+
+}
+
+bool OrderBookHandler::concludeContract(double price, double qty, Side EN_side)
+{
+    bool isContractWorked = false;
+    return isContractWorked;
 }
 
 
 bool OrderBookHandler::printMap()
 {
     for(auto itr = BUY_map.begin(); itr != BUY_map.end(); itr++)
-        cout << "BUY_map price : "<<itr->first << " qty : " << itr->second <<endl;
+        cout << "BUY_map price : "<<itr->first << " qty : " << itr->second.totalQTY <<endl;
     for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
-        cout << "SELL_map price : "<<itr->first << " qty : " << itr->second <<endl;
+        cout << "SELL_map price : "<<itr->first << " qty : " << itr->second.totalQTY <<endl;
 }
 
 bool OrderBookHandler::comparePriceMap(double price, double qty, Side EN_side)
@@ -142,7 +192,7 @@ OrderBookErrorMessage OrderBookHandler::getQtyByPrice(double price, double& qty,
 
 }
 
-double OrderBookHandler::setAppropriatePrice(std::map<double, double> check_map, Side EN_side)
+double OrderBookHandler::setAppropriatePrice(std::map<double, QtyData> check_map, Side EN_side)
 {
     //if(EN_side == EN_BUY) // set map serch
     //{
@@ -162,7 +212,7 @@ OrderBookErrorMessage OrderBookHandler::setOrderbook(const double price, double 
     {
         for(auto itr = SELL_map.begin(); itr != SELL_map.end(); itr++)
         {
-            itr->second = qty;
+            itr->second.totalQTY = qty;
             // 양방 유저 데이터(잔액, 포지션, 코인 수 등) 업데이트 처리 필요
             return OrderBookErrorMessage::EN_CONCLUSION_SUCCESS;
         }
@@ -172,7 +222,7 @@ OrderBookErrorMessage OrderBookHandler::setOrderbook(const double price, double 
     {
       for(auto itr = BUY_map.begin(); itr != BUY_map.end(); itr++)
         {
-            itr->second = qty;
+            itr->second.totalQTY = qty;
             // 양방 유저 데이터(잔액, 포지션, 코인 수 등) 업데이트 처리 필요
             return OrderBookErrorMessage::EN_CONCLUSION_SUCCESS;
         }
@@ -181,16 +231,21 @@ OrderBookErrorMessage OrderBookHandler::setOrderbook(const double price, double 
  
 bool OrderBookHandler::registerOrderBook(double price, double qty, Side EN_side, std::string symbol)
 {
+    bool isregisterWorked = false;
+    //concludeContract();
     if(EN_side == EN_BUY)
     {   
-                BUY_map[price] += qty; 
+                BUY_map[price].totalQTY += qty; 
                 std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
+                isregisterWorked = true;
     }
     else if (EN_side == EN_SELL)
     {
-                SELL_map[price] += qty;
+                SELL_map[price].totalQTY += qty;
                 std::cout<< "orderbook registered symbol : " << symbol << " side : " << TradeDataUtil::getSideStr(EN_side) << " price : " << price << " qty : " << qty<<endl; 
+                isregisterWorked = true;
     }
+    return isregisterWorked;
 }
 
 // 디버깅 시작하겠습니다.

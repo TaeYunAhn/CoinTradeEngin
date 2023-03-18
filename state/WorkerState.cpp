@@ -1,11 +1,13 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+#include <fstream>
+#include "../lib/json/json.h"
 //#include <curl/curl.h>
 #include "FinalState.h"
-#include "WorkerState.h"
 #include "../processor/RequestReceiver.h"
 #include "../processor/TradeDef.h"
+#include "WorkerState.h"
 
 using namespace std;
 
@@ -19,30 +21,53 @@ WorkerState::~WorkerState()
 
 EResultCode WorkerState::proceed()
 {
-    std::cout << "WorkerState proceed start"<<endl;
-    OrderRequest orderRequest;
-    orderRequest.orderType = EN_MARKET;
-    orderRequest.symbol = "BTC";
-    orderRequest.side = EN_BUY;
-    orderRequest.price = 2000.00; // 키 1
-    orderRequest.qty = 2000; // 밸류 1
-    
-    
-    std::cout << "orderRequest2 register start"<<endl;
+    const string& path = "/home/tahn/code_trade_engine/input.json";
+    std::ifstream json_dir(path.c_str());
+    Json::CharReaderBuilder builder;
+    builder["collectComments"] = false;
+    Json::Value root;
 
-    OrderRequest orderRequest2;
-    orderRequest2.orderType = EN_MARKET;
-    orderRequest2.symbol = "BTC";
-    orderRequest2.side = EN_BUY;
-    orderRequest2.price = 3000.01; // 키 2
-    orderRequest2.qty = 3000; // 밸류 2
+    JSONCPP_STRING err;
+    if (!parseFromStream(builder, json_dir, &root, &err))
+    {
+        cout << "Failed to parse json(" << path << ")" << endl;
+        return EResultCode::enFailed;
+    }
 
+    if(!root.isArray())
+    {
+        // Exception
+    }
 
+    vector<OrderRequest> requests;
+    for (const auto& elem : root)
+    {
+        const auto& id = elem["id"].asInt();
+        const auto& orderType = elem["order_type"].asInt();
+        const auto& symbol = elem["symbol"].asString();
+        const auto& side = elem["side"].asString();
+        const auto& price = elem["price"].asDouble();
+        const auto& qty = elem["qty"].asDouble();
 
+        requests.push_back(OrderRequest((OrderType)orderType, symbol, EN_BUY, price, qty));
+
+    }
 
     RequestReceiver requestReceiver;
-    requestReceiver.receiveReq(orderRequest);
-    requestReceiver.receiveReq(orderRequest2);
+    for ( const auto& req : requests)
+    {
+        std::cout << "WorkerState proceed start"<<endl;
+        requestReceiver.receiveReq(req);
+    }
+
+    ////
+
+
+
+
+
+
+    
 
     // //const auto& settings = CSettings::getInstance();
     

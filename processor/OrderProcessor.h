@@ -13,11 +13,10 @@ public:
     bool process(OrderRequest orderRequest);
     bool startProcess(OrderRequest orderRequest);
     ProcessorErrorMessage checkOrder(OrderRequest orderRequest, User user);
-    bool *getBUY_map(std::map<double, double> &buy_map);
-    bool *getSELL_map(std::map<double, double> &sell_map);
+    bool ExecuteConclusion(OrderRequest orderRequest, User user, Side EN_Side);
 
 private:
     ResponseSender* responseSender;
-    OrderBookHandler *orderBookHandler;
+    OrderBookHandler orderBookHandler;
 
 };
